@@ -58,8 +58,38 @@ s.events.on('sodium-browserify:wasm loaded', function() {
 	    var dates = messages.map(x => new Date(x.value.timestamp))
 	    var authors = messages.map(x => x.value.value.author)
 	    var types = messages.map(x => x.value.value.content.type)
+
+            var total = dates.length
 	    
 	    var t = arrow.Table.new([
+		arrow.DateVector.from(dates.slice(0, total / 2)),
+		arrow.Int32Vector.from(seqs.slice(0, total / 2)),
+		arrow.Utf8Vector.from(keys.slice(0, total / 2)),
+		arrow.Vector.from({ values: authors.slice(0, total / 2), type: new arrow.Dictionary(new arrow.Utf8(), new arrow.Int32()) }),
+		arrow.Vector.from({ values: types.slice(0, total / 2), type: new arrow.Dictionary(new arrow.Utf8(), new arrow.Int32()) }),
+	    ],
+	    ["date", "seq", "key", "author", "type"]
+	   )
+
+    	    var t2 = arrow.Table.new([
+		arrow.DateVector.from(dates.slice(total / 2, total)),
+		arrow.Int32Vector.from(seqs.slice(total / 2, total)),
+		arrow.Utf8Vector.from(keys.slice(total / 2, total)),
+		arrow.Vector.from({ values: authors.slice(total / 2, total), type: new arrow.Dictionary(new arrow.Utf8(), new arrow.Int32()) }),
+		arrow.Vector.from({ values: types.slice(total / 2, total), type: new arrow.Dictionary(new arrow.Utf8(), new arrow.Int32()) }),
+	    ],
+	    ["date", "seq", "key", "author", "type"]
+	   )
+
+	    console.log(t.length)
+	    console.log(t2.length)
+
+	    var all = new arrow.Table([t.chunks, t2.chunks])
+
+	    console.log(all.length)
+	    console.log(`imported data into arrow ${keys.length} keys, ${datediff(new Date(), start)}`)
+
+	    var allSingle = arrow.Table.new([
 		arrow.DateVector.from(dates),
 		arrow.Int32Vector.from(seqs),
 		arrow.Utf8Vector.from(keys),
@@ -68,19 +98,36 @@ s.events.on('sodium-browserify:wasm loaded', function() {
 	    ],
 	    ["date", "seq", "key", "author", "type"]
 	   )
-
+	    
+	    console.log(allSingle.length)
 	    console.log(`imported data into arrow ${keys.length} keys, ${datediff(new Date(), start)}`)
 
+	    var queryStart = new Date()
+
 	    var today = Array.from(
-		t.filter(
+		all.filter(
 		    arrow.predicate.col('date').gt(new Date(2020, 0, 30)).and(
 			arrow.predicate.col('author').eq("@6CAxOI3f+LUOVrbAl0IemqiS7ATpQvr9Mdw9LC4+Uv0=.ed25519")).and(
 			    arrow.predicate.col('type').eq("post"))
 		)
 	    )
 
-	    console.log(`query ${today.length} results, ${datediff(new Date(), start)}`)
+	    console.log(`query ${today.length} results, ${datediff(new Date(), queryStart)}`)
 
+	    queryStart = new Date()
+
+    	    var today2 = Array.from(
+		allSingle.filter(
+		    arrow.predicate.col('date').gt(new Date(2020, 0, 30)).and(
+			arrow.predicate.col('author').eq("@6CAxOI3f+LUOVrbAl0IemqiS7ATpQvr9Mdw9LC4+Uv0=.ed25519")).and(
+			    arrow.predicate.col('type').eq("post"))
+		)
+	    )
+
+	    console.log(`query ${today.length} results, ${datediff(new Date(), queryStart)}`)
+
+	    return
+	    
 	    var w = arrow.RecordBatchStreamWriter.writeAll(t)
 	    const fs = require('fs')
 	    w.toUint8Array().then((data) => {
