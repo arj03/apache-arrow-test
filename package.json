@@ -6,8 +6,10 @@
   "repository": {},
   "dependencies": {
     "apache-arrow": "^0.15.1",
-    "ssb-browser-core": "^1.2.3",
-    "xmlhttprequest": "^1.8.0"
+    "flumecodec": "0.0.1",
+    "flumedb": "^2.1.0",
+    "flumelog-aligned-offset": "^1.1.0",
+    "pull-stream": "^3.6.14"
   },
   "scripts": {},
   "author": "arj",
