@@ -63,13 +63,23 @@ s.events.on('sodium-browserify:wasm loaded', function() {
 		arrow.DateVector.from(dates),
 		arrow.Int32Vector.from(seqs),
 		arrow.Utf8Vector.from(keys),
-		arrow.Utf8Vector.from(authors),
-		arrow.Utf8Vector.from(types),
+		arrow.Vector.from({ values: authors, type: new arrow.Dictionary(new arrow.Utf8(), new arrow.Int32()) }),
+		arrow.Vector.from({ values: types, type: new arrow.Dictionary(new arrow.Utf8(), new arrow.Int32()) }),
 	    ],
 	    ["date", "seq", "key", "author", "type"]
 	   )
 
 	    console.log(`imported data into arrow ${keys.length} keys, ${datediff(new Date(), start)}`)
+
+	    var today = Array.from(
+		t.filter(
+		    arrow.predicate.col('date').gt(new Date(2020, 0, 30)).and(
+			arrow.predicate.col('author').eq("@6CAxOI3f+LUOVrbAl0IemqiS7ATpQvr9Mdw9LC4+Uv0=.ed25519")).and(
+			    arrow.predicate.col('type').eq("post"))
+		)
+	    )
+
+	    console.log(`query ${today.length} results, ${datediff(new Date(), start)}`)
 
 	    var w = arrow.RecordBatchStreamWriter.writeAll(t)
 	    const fs = require('fs')
@@ -77,18 +87,9 @@ s.events.on('sodium-browserify:wasm loaded', function() {
 		fs.writeFileSync("index.arrow", data)
 	    })
 	    
-	    //arrow.RecordBatchStreamWriter.write(t)
-	    
 	    return
 	    
 	    //console.log(t)
-
-	    var today = Array.from(
-		t.filter(
-		    arrow.predicate.col('date').gt(new Date(2020, 0, 30)).and(
-			arrow.predicate.col('author').eq("@6CAxOI3f+LUOVrbAl0IemqiS7ATpQvr9Mdw9LC4+Uv0=.ed25519"))
-		)
-	    )
 
 	    console.log(today)
 	})
