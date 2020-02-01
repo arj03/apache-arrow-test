@@ -9,7 +9,8 @@
     "flumecodec": "0.0.1",
     "flumedb": "^2.1.0",
     "flumelog-aligned-offset": "^1.1.0",
-    "pull-stream": "^3.6.14"
+    "pull-stream": "^3.6.14",
+    "ssb-ref": "^2.13.9"
   },
   "scripts": {},
   "author": "arj",
