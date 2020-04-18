@@ -137,15 +137,19 @@ pull(
           (idx) => {
             var l = get_links(idx)
             if (l.length > 0) {
-              var s = l.values.slice(l.valueOffsets[0], l.valueOffsets[l.valueOffsets.length-1])
-              var findIndex = 0
-              for (var i = 0; i < s.length; ++i) {
-                if (s[i] == uLink[findIndex])
-                {
-                  if (++findIndex == uLink.length)
-                    return true
-                } else
-                  findIndex = 0
+              for (var o = 0; o < l.valueOffsets.length - 1; ++o) {
+                var start = l.valueOffsets[o], end = l.valueOffsets[o+1]
+                if (end - start != uLink.length) continue
+
+                var found = true
+                for (var i = start; i < end; ++i) {
+                  if (l.values[i] != uLink[i-start]) {
+                    found = false
+                    break
+                  }
+                }
+
+                if (found) return true
               }
               return false
             } else
