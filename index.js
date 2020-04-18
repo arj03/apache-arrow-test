@@ -72,7 +72,7 @@ pull(
   db.stream(),
   pull.take(10000),
   pull.collect((err, messages) => {
-    console.log(`extract ${messages.length} messages, ${datediff(new Date(), start)}ms`)
+    console.log(`extract ${messages.length} messages, total: ${datediff(new Date(), start)}ms`)
 
     var flumeseqs = messages.map(x => x.seq)
 
@@ -85,9 +85,8 @@ pull(
     // channel and root "keys" are contained in links
 
     var links = messages.map(x => extractLinks(x.value))
-    console.log(links.slice(9997, 9999))
 
-    console.log(`extracted data ${datediff(new Date(), start)}ms`)
+    console.log(`extracted data, total: ${datediff(new Date(), start)}ms`)
    
     // indexes:
     // clock: [data.value.author, data.value.sequence] => flume seq
@@ -112,7 +111,7 @@ pull(
       arrow.Vector.from({ values: links, type: new arrow.List(listChild) }),
     ], ["date", "flumeseq", "key", "author", "sequence", "type", "links"])
 
-    console.log(`imported data into arrow ${keys.length} keys, ${datediff(new Date(), start)}ms`)
+    console.log(`imported data into arrow ${keys.length} keys, total: ${datediff(new Date(), start)}ms`)
 
     var queryStart = new Date()
 
@@ -159,10 +158,8 @@ pull(
     )
 
     console.log(`query returned ${q2.length} results, took ${datediff(new Date(), queryStart2)}ms`)
-    console.log(q2)
+    //console.log(q2)
     
-    return
-
     var w = arrow.RecordBatchStreamWriter.writeAll(all)
     const fs = require('fs')
     w.toUint8Array().then((data) => {
